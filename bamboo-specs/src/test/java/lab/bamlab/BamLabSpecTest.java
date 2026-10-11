@@ -175,7 +175,10 @@ public class BamLabSpecTest {
                 .filter(t -> t instanceof ScriptTaskProperties)
                 .map(t -> ((ScriptTaskProperties) t).getBody()).findFirst().orElseThrow();
         assertTrue(body.contains("--show-vars"));
-        assertTrue(body.contains("--outcome \"${bamboo.outcome}\""));
+        // Read from the job's environment, not substituted into the script
+        // text, so the variable's value never becomes shell code.
+        assertTrue(body.contains("--outcome \"$bamboo_outcome\""));
+        assertTrue(!body.contains("${bamboo.outcome}"));
     }
 
     @Test
