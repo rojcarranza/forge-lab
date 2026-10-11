@@ -11,6 +11,7 @@ for path in (
     LAB / "provisioncluster" / "scripts",
     LAB / "deprovisioncluster" / "scripts",
     LAB / "specspublish" / "scripts",
+    LAB / "bamlab" / "scripts",
     REPO_ROOT / "infra" / "scripts",
     REPO_ROOT / "infra" / "agent",
     REPO_ROOT / "infra" / "githooks",
