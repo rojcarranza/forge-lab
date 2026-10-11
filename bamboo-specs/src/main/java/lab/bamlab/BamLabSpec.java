@@ -120,7 +120,7 @@ public class BamLabSpec {
                         new Variable("db_password", "changeme"),
                         new Variable("outcome", "pass"))
                 .stages(new Stage("Run").jobs(
-                        job("Run", "RUN", "--show-vars --outcome \"${bamboo.outcome}\"")));
+                        job("Run", "RUN", "--show-vars --outcome \"$bamboo_outcome\"")));
     }
 
     Plan fail() {
