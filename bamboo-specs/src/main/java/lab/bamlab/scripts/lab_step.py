@@ -25,6 +25,10 @@ DEFAULT_STATE_DIR = Path.home() / ".bamlab" / "attempts"
 JUNIT_FILE = "results.xml"
 TESTS = ("compiles", "parses_config", "talks_to_bamboo")
 FAILING = TESTS[1:]
+# A restart follows its failed attempt within a session; a marker older than
+# this is left from an earlier build numbering (plan recreated, Bamboo
+# reinstalled), so it no longer counts.
+MARKER_MAX_AGE_SECONDS = 24 * 60 * 60
 
 
 def tick_count(seconds: int, tick: int) -> int:
@@ -67,14 +71,17 @@ def junit_xml(passed: bool, plan: str) -> str:
     )
 
 
-def first_attempt(state_dir: Path, key: str) -> bool:
+def first_attempt(state_dir: Path, key: str, now=time.time) -> bool:
     """True the first time a build key is seen; leaves a marker so a restart of
-    the same build (Bamboo keeps the key) sees False."""
+    the same build (Bamboo keeps the key) sees False. A stale marker counts as
+    unseen."""
     marker = state_dir / key
-    if marker.exists():
+    stamp = now()
+    if marker.exists() and stamp - marker.stat().st_mtime <= MARKER_MAX_AGE_SECONDS:
         return False
     state_dir.mkdir(parents=True, exist_ok=True)
     marker.touch()
+    os.utime(marker, (stamp, stamp))
     return True
 
 

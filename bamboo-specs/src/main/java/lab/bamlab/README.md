@@ -32,11 +32,14 @@ BAMLAB-TREE
 
 ## bam config
 
-Put this in the `.bam.yaml` of any directory you drive bam from (the server
-alias is whatever you named this Bamboo in `bam server add`):
+Put this in the `.bam.yaml` of any directory you drive bam from. Set
+`default_server` to the alias you gave this Bamboo in `bam server add`;
+without it bam falls back to your machine's default server, which may be
+another Bamboo:
 
 ```yaml
 version: 1
+default_server: lab   # the alias of this Bamboo in `bam server add`
 projects: [BAMLAB]
 children:
   BAMLAB-TREE: [BAMLAB-OK, BAMLAB-FLAKY, BAMLAB-SLOW, BAMLAB-ORPHAN]
@@ -85,8 +88,10 @@ tree that can go fully green after a FLAKY rerun. Field reference: bam's
 `lab_step.py` remembers a FLAKY build's first attempt in
 `~/.bamlab/attempts/<build result key>` on the agent, so a restart of the same
 build passes. The Test job therefore requires `agent.role=host`. If the marker
-is gone (another agent, a wiped home), the restart fails again. Clear old
-markers with:
+is gone (another agent, a wiped home), the restart fails again. A marker
+older than 24 hours no longer counts, so a plan recreated or a Bamboo
+reinstalled (build numbers start again at 1) still fails its first attempts.
+Clear old markers with:
 
 ```bash
 rm -rf ~/.bamlab/attempts

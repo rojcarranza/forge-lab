@@ -94,7 +94,7 @@ BAMLAB-TREE   ✓
 ├── BAMLAB-OK     ✓
 │   └── BAMLAB-LEAF ✓
 ├── BAMLAB-FLAKY  ✗  (2 failed tests)
-└── BAMLAB-SLOW   ✓  (running for ~3 min)
+└── BAMLAB-SLOW   …  (running for ~3 min)
     [BAMLAB-ORPHAN  not run — only with the README's children: config]
 ```
 
@@ -124,7 +124,9 @@ passes, so a Bamboo restart reruns just the Test job.
 The marker lives on the agent, so a restart must land on the same agent
 with the same home. `BAMLAB-FLAKY` requires `agent.role=host` (the host
 agent's home persists; the containerized agent's may not). If the marker
-is lost, a restart fails again; the README says so. Markers are tiny and
+is lost, a restart fails again; the README says so. A marker older than 24 hours
+counts as absent, so stale markers from an earlier build numbering (a plan
+recreated, Bamboo reinstalled) cannot make a fresh build pass. Markers are tiny and
 never cleaned up automatically; the README gives the one-line cleanup.
 
 **Tests in Bamboo.** The JUnit parser (`lab-results/*.xml`) is a final

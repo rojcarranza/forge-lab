@@ -131,3 +131,15 @@ def test_bad_arguments_are_usage_errors(argv):
     with pytest.raises(SystemExit) as exit_:
         lab_step.main(argv, env={}, sleep=lambda s: None, now=lambda: FIXED)
     assert exit_.value.code == 2
+
+
+def test_a_stale_marker_counts_as_a_first_attempt(tmp_path):
+    # After a plan is recreated or Bamboo is reinstalled, build numbers start
+    # again at 1; a marker left from the old numbering must not make a fresh
+    # build pass.
+    key = "BAMLAB-FLAKY-TEST-1"
+    assert lab_step.first_attempt(tmp_path, key, now=lambda: 1_000.0) is True
+    old = lab_step.MARKER_MAX_AGE_SECONDS + 1
+    os.utime(tmp_path / key, (1_000.0, 1_000.0))
+    assert lab_step.first_attempt(tmp_path, key, now=lambda: 1_000.0 + old) is True
+    assert lab_step.first_attempt(tmp_path, key, now=lambda: 1_000.0 + old + 60) is False
