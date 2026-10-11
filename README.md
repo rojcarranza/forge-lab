@@ -11,6 +11,8 @@ First run on a new machine (macOS or Ubuntu): [`SETUP.md`](SETUP.md).
 
 Day-to-day guides: [`docs/provision-usage.md`](docs/provision-usage.md) for
 running the Provision plan and checking what installed;
+[`docs/provisioning-without-bamboo.md`](docs/provisioning-without-bamboo.md)
+for the same lifecycle driven by `make` alone, with no Bamboo server or agent;
 [`docs/using-cluster-addons.md`](docs/using-cluster-addons.md) for using
 Keycloak, HDFS, OpenSearch and k9s once a cluster is up.
 

@@ -70,6 +70,12 @@ same cluster's config to decide which technologies' roles to run. It touches
 neither Terraform nor the VMs, which makes it the fast loop for iterating on
 an Ansible role.
 
+These targets run the same entrypoint scripts the plans do, so nothing about
+them needs Bamboo to be up. For the standalone lifecycle on its own — host
+prerequisites, what each stage writes, teardown and troubleshooting without a
+plan run — see
+[`provisioning-without-bamboo.md`](provisioning-without-bamboo.md).
+
 Provisioning refuses to start if VMs with the `<cluster>-` prefix already
 exist, so deprovision before re-running the same name.
 
