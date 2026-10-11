@@ -14,7 +14,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "shared" / "python"))
 
-from forgelab import credentials, paths, planvars, proc  # noqa: E402
+from forgelab import (  # noqa: E402
+    credentials, inventory, paths, planvars, proc, reachability,
+)
 
 USAGE = "usage: install.py <cluster_name> [cluster_config]"
 
@@ -34,6 +36,11 @@ def run(cluster: str, config):
     inv = paths.INV_DIR / f"{cluster}.ini"
     if not inv.is_file():
         proc.die(f"no inventory for {cluster} — provision it first")
+
+    # Gate the play on the hosts actually being routable. Without it a
+    # just-launched cluster fails every host with 'No route to host'
+    # seconds in, throwing away VMs that were seconds from ready.
+    reachability.wait_for_ssh(inventory.parse_hosts(inv.read_text()))
 
     technologies = config.enabled()
     secret_values = credentials.ensure(cluster, technologies)

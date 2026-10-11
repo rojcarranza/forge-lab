@@ -43,6 +43,7 @@ def lab(tmp_path, monkeypatch):
     )
 
     monkeypatch.setattr(install.paths, "INV_DIR", inv_dir)
+    monkeypatch.setattr(install.reachability, "port_open", lambda *a, **kw: True)
     monkeypatch.setattr(install.credentials.paths, "FORGELAB_HOME", tmp_path / "home")
     monkeypatch.setattr(
         install.proc, "run", lambda *a, **kw: recorded.append([str(x) for x in a])
@@ -71,6 +72,29 @@ def test_extra_vars_merges_the_secrets_in():
 def test_run_refuses_a_cluster_with_no_inventory(lab):
     with pytest.raises(LabError, match="no inventory for nosuch"):
         install.run("nosuch", a_config())
+
+
+def test_run_waits_for_ssh_before_it_starts_the_play(lab, monkeypatch):
+    """The regression: ansible reports an unroutable host as UNREACHABLE and
+    fails the whole run in seconds, so the wait has to happen before the play,
+    not inside it."""
+    order = []
+    monkeypatch.setattr(
+        install.reachability, "port_open", lambda ip, **kw: order.append(ip) or True
+    )
+    monkeypatch.setattr(
+        install.proc, "run", lambda *a, **kw: order.append("ansible-playbook")
+    )
+    install.run("lab1", a_config(NO_TECH))
+    assert order == ["1.2.3.4", "ansible-playbook"]
+
+
+def test_run_refuses_to_start_the_play_when_a_host_never_answers(lab, monkeypatch):
+    monkeypatch.setattr(install.reachability, "port_open", lambda *a, **kw: False)
+    monkeypatch.setattr(install.reachability, "ATTEMPTS", 1)
+    with pytest.raises(LabError, match="no ssh on lab1-management-1"):
+        install.run("lab1", a_config(NO_TECH))
+    assert lab.recorded == []
 
 
 def test_run_invokes_the_playbook_with_the_inventory(lab):

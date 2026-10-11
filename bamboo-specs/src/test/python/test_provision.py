@@ -90,6 +90,11 @@ def lab(tmp_path, monkeypatch, configs_dir):
     monkeypatch.setattr(provision.proc, "require_tools", lambda *_: None)
     monkeypatch.setattr(provision.paths, "TF_DIR", tmp_path / "terraform")
     monkeypatch.setattr(provision.paths, "INV_DIR", inv_dir)
+    # install.run() gates the play on every node answering on ssh; the
+    # fake VMs answer nothing, so probe them as up.
+    monkeypatch.setattr(
+        provision.install.reachability, "port_open", lambda *a, **kw: True
+    )
     # Same forgelab.paths module install.py and credentials.py read from too —
     # without this, install.run()'s credentials.write() would land in the
     # real ~/.forgelab instead of the test's tmp_path.
