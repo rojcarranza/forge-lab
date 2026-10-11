@@ -48,3 +48,42 @@ def test_an_empty_jar_counts_as_missing(tmp_path):
     jar = tmp_path / "agent-installer.jar"
     jar.touch()
     assert start_lab.needs_install(jar) is True
+
+
+LSOF = "p40237\ncbamboostub\nf3\n"
+
+
+def test_parses_the_process_holding_a_port_from_lsof():
+    assert start_lab.parse_lsof(LSOF) == "bamboostub (pid 40237)"
+
+
+def test_parses_nothing_from_empty_lsof_output():
+    assert start_lab.parse_lsof("") == ""
+
+
+def test_a_half_forwarded_pair_names_the_process_holding_the_port():
+    with pytest.raises(LabError) as err:
+        start_lab.decide_forward({8085: True, 54663: False},
+                                 holder=lambda port: "bamboostub (pid 40237)")
+    assert "8085" in str(err.value)
+    assert "bamboostub (pid 40237)" in str(err.value)
+
+
+def test_port_holder_is_empty_when_lsof_is_missing():
+    def no_lsof(*args, **kwargs):
+        raise FileNotFoundError("lsof")
+    assert start_lab.port_holder(8085, run_out=no_lsof) == ""
+
+
+def test_port_holder_asks_lsof_for_the_listener():
+    calls = []
+    def fake(*args, **kwargs):
+        calls.append(args)
+        return LSOF
+    assert start_lab.port_holder(8085, run_out=fake) == "bamboostub (pid 40237)"
+    assert calls == [("lsof", "-nP", "-iTCP:8085", "-sTCP:LISTEN", "-Fpc")]
+
+
+def test_a_half_forwarded_pair_without_a_known_holder_keeps_the_old_message():
+    with pytest.raises(LabError, match="port 8085 is already in use"):
+        start_lab.decide_forward({8085: True, 54663: False}, holder=lambda port: "")
