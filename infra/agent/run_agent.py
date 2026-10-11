@@ -72,25 +72,37 @@ def seed_registry_pointer(pointer: Path, registry: str):
     print(f"Seeded cluster registry location in {pointer}")
 
 
-def main(argv):
+def prepare():
+    """Everything the agent needs in place before the JVM starts.
+
+    Split from main() so start_lab.py can run the agent as a child process
+    without duplicating the capability and registry handoff.
+    """
     proc.require_tools(*REQUIRED_TOOLS)
     seed_capability(AGENT_HOME / "bin" / "bamboo-capabilities.properties")
     os.environ.update(registry_dir_env(dict(os.environ)))
     seed_registry_pointer(paths.REGISTRY_POINTER, os.environ["FORGELAB_REGISTRY_DIR"])
     print(f"Cluster registry: {os.environ['FORGELAB_REGISTRY_DIR']}")
 
-    # Agent home is set via the -Dbamboo.home property (before -jar), not a flag.
+
+def agent_argv() -> list:
+    """The console-mode agent command.
+
+    Agent home is set via the -Dbamboo.home property (before -jar), not a flag.
+    """
+    return [
+        "java",
+        f"-Dbamboo.home={AGENT_HOME}",
+        "-jar", str(AGENT_DIR / "agent-installer.jar"),
+        f"{BAMBOO_URL}/agentServer/", "console",
+    ]
+
+
+def main(argv):
+    prepare()
     # exec so the JVM replaces this process — no python wrapper left holding on
     # to a long-lived agent's signals.
-    os.execvp(
-        "java",
-        [
-            "java",
-            f"-Dbamboo.home={AGENT_HOME}",
-            "-jar", str(AGENT_DIR / "agent-installer.jar"),
-            f"{BAMBOO_URL}/agentServer/", "console",
-        ],
-    )
+    os.execvp("java", agent_argv())
 
 
 if __name__ == "__main__":

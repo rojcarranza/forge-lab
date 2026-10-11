@@ -23,6 +23,14 @@ docs/provision-usage.md.
   (24h timebomb, runtime-only, never committed), sysadmin `admin/admin`, and the
   40-hex agent security token (created once, shared server<->agent)
 - `make ui` — port-forward Bamboo to http://localhost:8085
+- `make bamboo` — the one command for a local plan run, replacing `make up`
+  + `make ui` + `make agent-run` in three terminals: it runs `up`, waits for
+  the rollout, forwards 8085/54663 in the background, installs the agent if
+  its jar is missing, then runs the agent in the foreground. Ctrl-C stops the
+  agent and takes the forward down with it, so no orphan holds 8085. A
+  port-forward already running elsewhere is reused; a half-open pair (one of
+  the two ports taken) is an error naming the port rather than a later
+  "address already in use"
 - `make bamboo-restart` — the fix for "license has expired ... read-only mode".
   The timebomb re-arms on server start, so a pod restart buys another 24h;
   PVCs and DB are untouched. `make relicense` does NOT help here: Atlassian

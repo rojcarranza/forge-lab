@@ -39,3 +39,10 @@ def test_says_nothing_when_the_pointer_already_agrees(tmp_path, capsys):
     pointer.write_text("/clone/cluster_registered\n")
     run_agent.seed_registry_pointer(pointer, "/clone/cluster_registered")
     assert capsys.readouterr().out == ""
+
+
+def test_the_console_command_carries_agent_home_and_the_server_url():
+    argv = run_agent.agent_argv()
+    assert argv[0] == "java"
+    assert argv[1] == f"-Dbamboo.home={run_agent.AGENT_HOME}"
+    assert argv[-2:] == [f"{run_agent.BAMBOO_URL}/agentServer/", "console"]

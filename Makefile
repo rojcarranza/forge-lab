@@ -32,10 +32,8 @@ bootstrap: setup bamboo-secrets ## One command: full unattended stack (no setup 
 	kubectl -n ci rollout status statefulset/bamboo --timeout=600s
 	@echo ""
 	@echo "Bamboo up, licensed, broker on 54663. Login admin/admin at http://localhost:8085"
-	@echo "Finish the agent (two terminals):"
-	@echo "  1) make ui"
-	@echo "  2) make agent-install && make agent-run   # token auto-read from secret"
-	@echo "  then approve the agent once: Administration > Agents"
+	@echo "Finish with 'make bamboo' (port-forward + host agent in one terminal),"
+	@echo "then approve the agent once: Administration > Agents"
 
 .PHONY: bamboo-secrets
 bamboo-secrets: ## Create/refresh unattended-setup secrets (license, admin, agent token)
@@ -79,7 +77,7 @@ reset: ## DESTRUCTIVE: wipe Bamboo state (PVCs + DB) and reinstall clean
 	$(MAKE) bamboo-secrets
 	helm upgrade --install bamboo atlassian-data-center/bamboo -n ci -f infra/helm/bamboo-values.yaml --version 2.0.14
 	kubectl -n ci rollout status statefulset/bamboo --timeout=600s
-	@echo "Reset done. Bamboo re-provisioned unattended (admin/admin, broker up). 'make ui' + 'make agent-run'."
+	@echo "Reset done. Bamboo re-provisioned unattended (admin/admin, broker up). Run 'make bamboo'."
 
 .PHONY: status
 status: ## Pods in ns ci
@@ -88,6 +86,10 @@ status: ## Pods in ns ci
 .PHONY: ui
 ui: ## Port-forward Bamboo UI (8085) + agent JMS broker (54663)
 	kubectl -n ci port-forward pod/bamboo-0 8085:8085 54663:54663
+
+.PHONY: bamboo
+bamboo: up ## Everything for a local plan run: stack up, ports forwarded, host agent running
+	infra/scripts/start_lab.py
 
 .PHONY: license
 license: ## Fetch + copy the 24h Bamboo timebomb key (for the setup wizard)
