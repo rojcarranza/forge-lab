@@ -107,7 +107,7 @@ Bamboo variables passed as arguments.
 | Flag | Effect |
 | --- | --- |
 | `--sleep N --tick S` | runs N seconds, printing `HH:MM:SS bamlab tick k/m` every S seconds and flushing each line |
-| `--junit pass\|fail --junit-dir DIR` | writes `DIR/results.xml`: 3 test cases in one suite; in `fail` mode 2 fail, each with a message and a multi-line body |
+| `--junit pass\|fail\|auto --junit-dir DIR` | writes `DIR/results.xml`: 3 test cases in one suite; in `fail` mode 2 fail, each with a message and a multi-line body; `auto` fails them exactly when the outcome fails |
 | `--outcome pass\|fail\|first-attempt-fails` | the exit code; any failure prints `ERROR bamlab: deliberate failure (<plan>)` last |
 | `--attempt-key KEY --state-dir DIR` | used by `first-attempt-fails`: KEY is `${bamboo.buildResultKey}` |
 | `--show-vars` | prints every `bamboo_*` environment variable, sorted, as `name=value` |
