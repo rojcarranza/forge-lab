@@ -81,6 +81,10 @@ one directory per Bamboo plan, holding its spec AND the code it runs:
   `python/forgelab/` (the lab's one library, stdlib only; `credentials.py` writes
   `~/.forgelab/<cluster>-credentials.yml`, referenced by the registry, never inlined),
   `terraform/` (`modules/multipass/` = swappable VM backend boundary), `ansible/`
+- `lab/bamlab/` — `BAMLAB-*`: synthetic plans with fixed outcomes (a parent
+  with child plans, a first-attempt-fails child, a slow one, a failing one) for
+  trying bam against this Bamboo. One spec class publishes all eight, leaves
+  first; every job runs `scripts/lab_step.py`. See its README
 - `infra/` — lab operations NOT run by any plan: `helm/` chart values,
   `agent/` host-agent install+run, `scripts/` license fetch
 - `cluster_configs/` — committed input, one `<name>_cluster.yaml` per cluster:

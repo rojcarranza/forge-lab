@@ -16,6 +16,10 @@ for the same lifecycle driven by `make` alone, with no Bamboo server or agent;
 [`docs/using-cluster-addons.md`](docs/using-cluster-addons.md) for using
 Keycloak, HDFS, OpenSearch and k9s once a cluster is up.
 
+[`bamboo-specs/src/main/java/lab/bamlab/README.md`](bamboo-specs/src/main/java/lab/bamlab/README.md)
+covers `BAMLAB`, synthetic plans with known outcomes for trying the `bam` CLI
+against this Bamboo.
+
 ## What is this
 
 Everything in this repo exists to answer one question repeatedly, on demand:

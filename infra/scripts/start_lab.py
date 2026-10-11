@@ -50,21 +50,50 @@ def port_open(port: int, host: str = "localhost") -> bool:
         return False
 
 
-def decide_forward(states: dict) -> str:
+def parse_lsof(text: str) -> str:
+    """`lsof -Fpc` output to "name (pid N)" for the first process, or ""."""
+    pid = name = ""
+    for line in text.splitlines():
+        if line.startswith("p") and not pid:
+            pid = line[1:]
+        elif line.startswith("c") and pid and not name:
+            name = line[1:]
+    return f"{name} (pid {pid})" if pid and name else ""
+
+
+def port_holder(port: int, run_out=proc.run_out) -> str:
+    """Who is listening on the port, for the error message. Best effort: no
+    lsof, or nothing found, is an empty string, never a new failure."""
+    try:
+        return parse_lsof(run_out(
+            "lsof", "-nP", f"-iTCP:{port}", "-sTCP:LISTEN", "-Fpc", check=False,
+        ))
+    except OSError:
+        return ""
+
+
+def decide_forward(states: dict, holder=port_holder) -> str:
     """Reuse a `make ui` already running in another terminal, or start our own.
 
     A half-open pair is neither: something else holds one of the ports, and a
-    second forward would fail to bind it. Say which port rather than letting
-    kubectl's "address already in use" arrive later, mid-startup.
+    second forward would fail to bind it. Say which port, and which process
+    when lsof can tell, rather than letting kubectl's "address already in use"
+    arrive later, mid-startup.
     """
     if all(states.values()):
         return "reuse"
     if not any(states.values()):
         return "start"
-    taken = ", ".join(str(port) for port, is_open in states.items() if is_open)
+    taken = [port for port, is_open in states.items() if is_open]
+    held = [f"{port} is held by {who}" for port in taken if (who := holder(port))]
+    if held:
+        proc.die(
+            f"port {'; port '.join(held)}, but the rest of the forward is not up — "
+            "stop it and retry"
+        )
     proc.die(
-        f"port {taken} is already in use but the rest of the forward is not — "
-        "stop whatever holds it (a dead 'make ui'?) and retry"
+        f"port {', '.join(str(port) for port in taken)} is already in use but the rest "
+        "of the forward is not — stop whatever holds it (a dead 'make ui'?) and retry"
     )
 
 

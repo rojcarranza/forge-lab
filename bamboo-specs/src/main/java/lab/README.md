@@ -21,9 +21,12 @@ lab/
 ├── agentimage/                 # AGENT-BUILD
 │   ├── BuildAgentImageSpec.java
 │   └── README.md               # build script lives in the bamboo-agent repo
-└── specspublish/               # FORGE-SPECS
-    ├── PublishSpecsSpec.java
-    └── scripts/publish_specs.py
+├── specspublish/               # FORGE-SPECS
+│   ├── PublishSpecsSpec.java
+│   └── scripts/publish_specs.py
+└── bamlab/                     # BAMLAB-* (plans for trying bam)
+    ├── BamLabSpec.java
+    └── scripts/lab_step.py
 ```
 
 Yes, Python and Terraform live inside a Maven source root. That is deliberate:
