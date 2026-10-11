@@ -20,3 +20,21 @@
   when:
     - "'opensearch' in (addons | default('')).split(',')"
     - inventory_hostname not in groups['opensearch_master'] | default([])
+
+# Terminals such as ghostty and kitty send a TERM whose terminfo entry the
+# VM's ncurses does not carry, and full-screen tools then abort on login with
+# an unreadable "Error: exit status 1" (k9s does exactly this). Fall back to a
+# terminfo entry the VM does have, so k9s works on the first ssh.
+- name: Terminfo fallback for unknown TERM values
+  ansible.builtin.copy:
+    dest: /etc/profile.d/10-terminfo-fallback.sh
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      # Managed by forge-lab (ansible role: common)
+      if [ -n "$TERM" ] && [ "$TERM" != dumb ] \
+          && ! infocmp -x "$TERM" >/dev/null 2>&1; then
+          TERM=xterm-256color
+          export TERM
+      fi
