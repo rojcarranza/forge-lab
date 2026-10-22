@@ -177,3 +177,8 @@ Full contract in `bamboo-specs/src/main/java/lab/README.md`. In short:
   and the FORGE-SPECS plan polling `main` every 3 minutes. There is no list of
   spec classes anywhere — the publisher globs `lab/*/*Spec.java`, so adding a
   plan directory is the whole registration step
+- Push through `git push no-mistakes <branch>`, never `origin`: the
+  `.no-mistakes.yaml` gate runs `make lint` on the Mac, using host pytest (uv),
+  terraform (Homebrew), ansible-lint (Nix) and mvn/java (sdkman). Use `gh-axi`
+  for GitHub, not raw `gh`. Run `/code-review` only on PRs that did not go
+  through no-mistakes

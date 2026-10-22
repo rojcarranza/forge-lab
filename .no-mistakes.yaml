@@ -1,0 +1,10 @@
+# Gates run locally (no GitHub Actions). Mac only. Static checks only: nothing
+# here talks to Bamboo, Kubernetes, Multipass or any running service.
+no_ci: true
+allow_repo_commands: false
+commands:
+  lint: make lint
+gates:
+  - name: make-lint
+    after: test
+    command: make lint
